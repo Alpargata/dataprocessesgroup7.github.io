@@ -14,6 +14,9 @@ library(corrplot)
 library(car)
 library(FactoMineR)
 library(RiverLoad)
+library(GGally)
+library(plotly)
+library(Hmisc)
 ```
 
 This is our final projct for the subject Data Processes. The topic we chose is **Climate Change**.  
@@ -52,7 +55,7 @@ The raw dataset has the following features:
 
 ```{r echo=F}
 # Reading the data from file
-co2data<-read.csv("../data/co2.csv", header=TRUE, na.strings = TRUE )
+co2data<-read.csv("data/co2.csv", header=TRUE, na.strings = TRUE )
 
 #Creating a column for Year to preserve Date
 co2data$Year = substr(co2data$Date, start = 0, stop = 4)
@@ -153,7 +156,16 @@ ggplot(data = co2data_year, aes(x = Year, y = Trend) )+
 
 
 ### International comprehensive Ocean-Atmosphere (ICOADS-NOAA)
-
+Dataset description
+https://rda.ucar.edu/datasets/ds548.0/
+The International Comprehensive Ocean-Atmosphere Data Set (ICOADS) is a global ocean marine meteorological and surface ocean dataset. It contains data measurements and visual observation collected by ships, moored and drifting buoys, coastal stations, and other marine and near-surface ocean platforms. Each marine report contains individual observations of meteorological and oceanographic variables, such as sea surface and air temperatures, wind, pressure, humidity, and cloudiness. The coverage is global and sampling density varies depending on date and geographic position relative to shipping routes and ocean observing systems. The dataset (which contains the observations from the year 2010) consists of 76 columns and 100,000 rows, but many of the columns present a lot of missing values (in many cases more than a half of the observations), so that we had to drop many of them. 
+Data processing
+Taking into account the general topic of interest, we decided to consider only the features regarding temperature, pressure of water, weather, clouds and waves. However, after analysing the number of NA values into the columns, we realized that most of them weren’t useful because of the high percentage of missing values (sometimes more than a half) so we deleted them. After doing this process, we deleted the remaining NA values, by getting rid of the rows containing them. Eventually, the final dataset was composed by 9 columns and 69,050 rows.
+To understand the relationship between the variables, we proceeded with the study of the correlations between the variables. By plotting the correlation matrix, we could easily see that, as expected, the variables sea_level_temp and air_temperature were highly correlated. Another observation which could be seen is that there is a negative correlation between sea_surface_temp and latitude. To investigate more about this, plotted sea_surface_temp vs latitude and we could observ a pattern which, as expected, showed that temperature is low in the poles and increases the closer we get to the equator.
+Afterwards, in order to make the manipulation easier, we aggregated month and day into the variable Date. Moreover, we created a new variable, called Hemisphere, by binning the latitude.
+Graphs
+1.  Firstly, we choose to represent the values of the sea_level_pressure in a world map. Lower values of pressure are represented by blue colours, while higher values are represented by yellow and red colours.
+2.  In order to make a comparison between the evolution of temperature during the year in the northern and southern pole, we plotted two bar charts.
 
 ### The National Snow and Ice Data Center
 The National Snow and Ice Data Center (NSIDC) supports research into our world’s frozen realms: the snow, ice, glaciers, frozen ground, and climate interactions that make up Earth’s cryosphere. NSIDC manages and distributes scientific data, creates tools for data access, supports data users, performs scientific research, and educates the public about the cryosphere.
@@ -173,7 +185,7 @@ The dataset provides the total extent for each day for the entire time period (1
 The main problem with this dataset it that measures are taken every 2 days, while the co2 are monthly. 
 
 ```{r, echo=F}
-data<-read.csv('../data/seaice.csv',  header=TRUE)
+data<-read.csv('data/seaice.csv',  header=TRUE)
 summary(data)
 ```
 
@@ -230,6 +242,12 @@ This was an easy task after rearranging the times, but we were careful in the me
 After doing that, we explored the data. We could observe that ice variation in the South pole was almost insignificant, since the regression line was straight completely and variation remained the same. The main concern was for the north pole extent, which is greatly damaged by the co2. We made a graph representing it that can be seen below.
 
 ```{r echo=F}
+data<-read.csv("data/MergedDataset.csv",  header=TRUE)
+
+ggcorr(data)
+r=cov(data[,c(2,6)]) # We have here the covariance matrix between North and CO2.
+rcor=rcorr(as.matrix(data[,c(2,6)])) # Here the correlation matrix
+corrplot(rcor$r) # here we can see that there exists a negative relation between co2 and Ice surface
 
 ```
 
